@@ -1,6 +1,7 @@
 var apiKey,
     sessionId,
     token,
+    status,
     archiveID;
 
 $(document).ready(function() {
@@ -32,6 +33,16 @@ function initializeSession() {
   session.on('archiveStarted', function(event){
     archiveID = event.id;
     console.log('Archive started ' + archiveID);
+    $('#stop').show();
+    $('#start').hide();
+  });
+
+  session.on('archiveStopped', function(event){
+    archiveID = event.id;
+    console.log('Archive stopped ' + archiveID);
+    $('#start').hide();
+    $('#stop').hide();
+    $('#view').show();
   });
 
   session.on('sessionDisconnected', function(event) {
@@ -57,26 +68,42 @@ function initializeSession() {
 
 // Start recording
 function startArchive() {
-  $.post('/start/' + sessionId);
+  $.post(SAMPLE_SERVER_BASE_URL + '/start/' + sessionId);
   $('#start').hide();
   $('#stop').show();
 }
 
 // Stop recording
 function stopArchive() {
-  $.post('/stop/' + archiveID);
+  $.post(SAMPLE_SERVER_BASE_URL + '/stop/' + archiveID);
   $('#stop').hide();
-  document.getElementById('view').disabled = false;
+  $('#view').prop('disabled', false);
+  $('#stop').show();
 }
 
-// Download and view archive
+// Get the archive status. If it is  "available", download it. Otherwise, keep checking
+// every 5 secs until it is "available"
 function viewArchive() {
-  $.post('/view/' + archiveID, function(res) {
-    console.log(res);
-    url = res.archiveUrl;
-    window.open(url);
-  });
+   $('#view').prop('disabled', true);
+
+   $.get(SAMPLE_SERVER_BASE_URL + '/view/' + archiveID, function(res){
+     status = res.status;
+     if (status == 'available')
+     {
+       downloadArchive(archiveID);
+     } else {
+       window.setTImeout(viewArchive, 5000);
+     }
+   });
+}
+
+// Download archive
+function downloadArchive(archiveID) {
+  window.location.href = '/download/' + archiveID;
+    $('#start').show();
+    $('#view').prop('disabled', true);
+}
 
   $('#start').show();
   $('#view').hide();
-}
+
