@@ -1,8 +1,12 @@
 var apiKey,
     sessionId,
-    token;
+    token,
+    archiveID;
 
 $(document).ready(function() {
+    $('#stop').hide();
+    archiveID = null;
+
   // Make an Ajax request to get the OpenTok API key, session ID, and token from the server
   $.get(SAMPLE_SERVER_BASE_URL + '/session', function(res) {
     apiKey = res.apiKey;
@@ -25,6 +29,11 @@ function initializeSession() {
     });
   });
 
+  session.on('archiveStarted', function(event){
+    archiveID = event.id;
+    console.log('Archive started ' + archiveID);
+  });
+
   session.on('sessionDisconnected', function(event) {
     console.log('You were disconnected from the session.', event.reason);
   });
@@ -44,4 +53,30 @@ function initializeSession() {
       console.log('There was an error connecting to the session: ', error.code, error.message);
     }
   });
+}
+
+// Start recording
+function startArchive() {
+  $.post('/start/' + sessionId);
+  $('#start').hide();
+  $('#stop').show();
+}
+
+// Stop recording
+function stopArchive() {
+  $.post('/stop/' + archiveID);
+  $('#stop').hide();
+  document.getElementById('view').disabled = false;
+}
+
+// Download and view archive
+function viewArchive() {
+  $.post('/view/' + archiveID, function(res) {
+    console.log(res);
+    url = res.archiveUrl;
+    window.open(url);
+  });
+
+  $('#start').show();
+  $('#view').hide();
 }
