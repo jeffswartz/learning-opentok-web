@@ -27,3 +27,11 @@ body, html {
     border: 3px solid white;
     border-radius: 3px;
 }
+
+#canvas {
+    background-color: yellow;
+    z-index: 5555555;
+    position: absolute;
+    opacity: 0.4;
+    filter: alpha(opacity=40); /* For IE 8 */
+}

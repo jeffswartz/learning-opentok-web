@@ -27,15 +27,7 @@ function initializeSession() {
       fitMode: 'contain'
     });
     canvas = document.createElement('div');
-    canvas.id = 'canvas'
-    canvas.style = {
-      opacity: 0.4,
-    }
-    canvas.style['background-color'] = 'yellow';
-    canvas.style['z-index'] = '5555555';
-    canvas.style.position = 'absolute';
-    canvas.style.opacity = '0.4';
-    canvas.style.filter = 'alpha(opacity=40)'; // For IE 8
+    canvas.id = 'canvas';
     subscriber.element.appendChild(canvas);
     positionCanvas();
     $(window).resize(function() {
@@ -81,9 +73,9 @@ function positionCanvas() {
     bounds.x = 0;
     bounds.y = (subscriber.element.clientHeight - bounds.height) / 2;
   }
-  canvas.style.width = bounds.width + 'px';
-  canvas.style.height = bounds.height + 'px';
-  canvas.style.left = bounds.x + 'px';
-  canvas.style.top = bounds.y + 'px';
+  $('#canvas').css('width', bounds.width + 'px');
+  $('#canvas').css('height', bounds.height + 'px');
+  $('#canvas').css('left', bounds.x + 'px');
+  $('#canvas').css('top', bounds.y + 'px');
   console.log(bounds);
 }
