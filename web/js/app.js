@@ -1,6 +1,8 @@
 var apiKey,
     sessionId,
-    token;
+    token,
+    subscriber,
+    canvas;
 
 $(document).ready(function() {
   // Make an Ajax request to get the OpenTok API key, session ID, and token from the server
@@ -18,10 +20,26 @@ function initializeSession() {
 
   // Subscribe to a newly created stream
   session.on('streamCreated', function(event) {
-    session.subscribe(event.stream, 'subscriber', {
+    subscriber = session.subscribe(event.stream, 'subscriber', {
       insertMode: 'append',
       width: '100%',
-      height: '100%'
+      height: '100%',
+      fitMode: 'contain'
+    });
+    canvas = document.createElement('div');
+    canvas.id = 'canvas'
+    canvas.style = {
+      opacity: 0.4,
+    }
+    canvas.style['background-color'] = 'yellow';
+    canvas.style['z-index'] = '5555555';
+    canvas.style.position = 'absolute';
+    canvas.style.opacity = '0.4';
+    canvas.style.filter = 'alpha(opacity=40)'; // For IE 8
+    subscriber.element.appendChild(canvas);
+    positionCanvas();
+    $(window).resize(function() {
+      positionCanvas();
     });
   });
 
@@ -44,4 +62,28 @@ function initializeSession() {
       console.log('There was an error connecting to the session: ', error.code, error.message);
     }
   });
+}
+
+function positionCanvas() {
+  if (!subscriber || !subscriber.stream) {
+    return;
+  }
+  var aspectRatio = subscriber.stream.videoDimensions.width / subscriber.stream.videoDimensions.height;
+  var bounds = {};
+  bounds.width = subscriber.element.clientWidth;
+  bounds.height = subscriber.element.clientHeight;
+  if (bounds.width / bounds.height > aspectRatio) {
+    bounds.width = bounds.height * aspectRatio;
+    bounds.x = (subscriber.element.clientWidth - bounds.width) / 2;
+    bounds.y = 0;
+  } else {
+    bounds.height = bounds.width / aspectRatio;
+    bounds.x = 0;
+    bounds.y = (subscriber.element.clientHeight - bounds.height) / 2;
+  }
+  canvas.style.width = bounds.width + 'px';
+  canvas.style.height = bounds.height + 'px';
+  canvas.style.left = bounds.x + 'px';
+  canvas.style.top = bounds.y + 'px';
+  console.log(bounds);
 }
